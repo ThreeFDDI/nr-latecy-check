@@ -82,9 +82,11 @@ def kickoff():
     print("~" * 80)
     return nr
 
-
+# Nornir task for latency check
 def check_latency(task):
-
+"""
+This function uses the NAPALM ping module to test latency to a specified destination
+"""
     c_print(f"**** {task.host} ****")
 
     output = task.run(task=napalm_ping, dest=task.host['dest'], size=1500, count=100)
