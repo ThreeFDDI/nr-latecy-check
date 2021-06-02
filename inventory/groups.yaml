@@ -5,5 +5,4 @@ iosxe:
     netmiko:
       platform: cisco_ios
   port: 22
-  data:
-    dest: 2.2.2.2
+
