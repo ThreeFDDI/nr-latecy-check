@@ -19,7 +19,6 @@ from nornir.plugins.tasks.networking import netmiko_send_command
 from nornir.plugins.tasks.networking import napalm_ping
 from pprint import pprint as pp
 
-
 # print formatting function
 def c_print(printme):
     # Print centered text with newline before and after
@@ -31,7 +30,11 @@ def kickoff():
     # print banner
     print()
     print("~" * 80)
-    c_print("This script will gather discovery information from Cisco devices")
+
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c_print(f"**** {time_stamp} ****")
+
+    c_print("This script will test latency from various Cisco devices")
 
     if len(sys.argv) < 2:
         site = ""
@@ -52,8 +55,8 @@ def kickoff():
     )
 
     # filter The Norn
-    nr = nr.filter(platform="ios")
-
+    #nr = nr.filter(platform="ios")
+    
     c_print("Checking inventory for credentials")
     # check for existing credentials in inventory
 
@@ -66,78 +69,38 @@ def kickoff():
     if nr.inventory.defaults.password == None:
         nr.inventory.defaults.password = getpass()
         print()
+
+    c_print(f"Devices: {nr.inventory.hosts.keys()}")
+
     print("~" * 80)
     return nr
 
 
 def check_latency(task):
 
-    print(task.host)
+    c_print(f"{task.host}")
 
-    cmd = "ping ip 2.2.2.2 size 1000 repeat 1000"
-
-    output = task.run(task=napalm_ping, dest="2.2.2.2")
+    output = task.run(task=napalm_ping, dest="2.2.2.2", size=1500, count=100)
 
     if "success" in output.result.keys():
-        pp(output.result)
-    #if output.result[0] == "success":
-    #    print(output.result)
 
-"""
-    # show commands to be run
-    commands = [
-        "show version",
-        "show inventory",
-        "show module",
-        "show switch detail",
-        "dir /all /recursive",
-        "dir /recursive all",
-        "show boot",
-        "show run",
-        "show vlan brief",
-        "show vlan",
-        "show interface status",
-        "show interface trunk",
-        "show power inline",
-        "show ip interface brief",
-        "show ip route",
-        "show ip arp",
-        "show mac address-table",
-        "show cdp neighbors",
-        "show cdp neighbors detail",
-        "show log",
-    ]
+        loss = output.result['success']['packet_loss']
+        sent = output.result['success']['probes_sent']
+        rtt_avg = output.result['success']['rtt_avg']
+        #rtt_max = output.result['success']['rtt_max']
+        #rtt_min = output.result['success']['rtt_min']
 
-    c_print(f"*** Collecting data from {task.host} ***")
+        loss_pct = loss / sent
 
-    # set time stamp for output
-    time_stamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        c_print(f"**** {loss_pct}% of {sent} pings failed ****")
+        
+        c_print(f"**** Average latency: {rtt_avg} ms ****")
 
-    # loop over commands
-    for cmd in commands:
-        # send command to device
-        output = task.run(task=netmiko_send_command, command_string=cmd)
-        # save results with timestamp to aggregate result
-        task.host["info"] = (
-            "\n" * 2
-            + "#" * 40
-            + "\n"
-            + cmd
-            + " : "
-            + time_stamp
-            + "\n"
-            + "#" * 40
-            + "\n" * 2
-            + output.result
-        )
-        # write output files with time stamp
-        task.run(
-            task=files.write_file,
-            filename=f"output/{task.host}_info_{time_stamp}.txt",
-            content=task.host["info"],
-            append=True,
-        )
-"""
+    else:
+        print(output.result)
+
+    print("~" * 80)
+
 
 def main():
     # kickoff The Norn
