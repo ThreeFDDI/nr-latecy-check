@@ -55,8 +55,8 @@ def kickoff():
     )
 
     # filter The Norn
-    #nr = nr.filter(platform="ios")
-    
+    # nr = nr.filter(platform="ios")
+
     c_print("Checking inventory for credentials")
     # check for existing credentials in inventory
 
@@ -82,25 +82,26 @@ def kickoff():
     print("~" * 80)
     return nr
 
+
 # Nornir task for latency check
 def check_latency(task):
-"""
-This function uses the NAPALM ping module to test latency to a specified destination
-"""
+    """
+    This function uses the NAPALM ping module to test latency to a specified destination
+    """
     c_print(f"**** {task.host} ****")
 
-    output = task.run(task=napalm_ping, dest=task.host['dest'], size=1500, count=100)
+    output = task.run(task=napalm_ping, dest=task.host["dest"], size=1500, count=100)
 
     if "success" in output.result.keys():
 
-        loss = output.result['success']['packet_loss']
-        sent = output.result['success']['probes_sent']
-        rtt_avg = output.result['success']['rtt_avg']
+        loss = output.result["success"]["packet_loss"]
+        sent = output.result["success"]["probes_sent"]
+        rtt_avg = output.result["success"]["rtt_avg"]
 
         loss_pct = loss / sent
 
         c_print(f"**** {loss_pct}% of {sent} pings failed ****")
-        
+
         c_print(f"**** Average latency: {rtt_avg} ms ****")
 
     else:
