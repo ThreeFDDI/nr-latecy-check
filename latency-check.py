@@ -31,10 +31,10 @@ def kickoff():
     print()
     print("~" * 80)
 
-    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c_print(f"**** {time_stamp} ****")
+    c_print(f"This script will test latency from various Cisco devices")
 
-    c_print("This script will test latency from various Cisco devices")
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c_print(f"Timestamp: {time_stamp}")
 
     if len(sys.argv) < 2:
         site = ""
@@ -57,6 +57,17 @@ def kickoff():
     # filter The Norn
     # nr = nr.filter(platform="ios")
 
+    c_print(f"Destination: {nr.inventory.defaults.data['dest']}")
+
+    devices = ""
+    for dev in nr.inventory.hosts.keys():
+        if devices != "":
+            devices += ", "
+
+        devices += f"{dev}"
+
+    c_print(f"Devices: {devices}")
+
     c_print("Checking inventory for credentials")
     # check for existing credentials in inventory
 
@@ -70,16 +81,8 @@ def kickoff():
         nr.inventory.defaults.password = getpass()
         print()
 
-    devices = ""
-    for dev in nr.inventory.hosts.keys():
-        if devices != "":
-            devices += ", "
-
-        devices += f"{dev}"
-
-    c_print(f"Devices: {devices}")
-
     print("~" * 80)
+
     return nr
 
 
@@ -88,25 +91,31 @@ def check_latency(task):
     """
     This function uses the NAPALM ping module to test latency to a specified destination
     """
-    c_print(f"**** {task.host} ****")
+    c_print(f"**** {task.host}: BEGIN TESTING ****")
 
     output = task.run(task=napalm_ping, dest=task.host["dest"], size=1500, count=100)
 
     if "success" in output.result.keys():
-
-        loss = output.result["success"]["packet_loss"]
-        sent = output.result["success"]["probes_sent"]
-        rtt_avg = output.result["success"]["rtt_avg"]
-
-        loss_pct = loss / sent
-
-        c_print(f"**** {loss_pct}% of {sent} pings failed ****")
-
-        c_print(f"**** Average latency: {rtt_avg} ms ****")
-
+        c_print(f"**** {task.host}: TESTING SUCCESS ****")
+        task.host['output'] = output.result['success']
     else:
-        c_print("**** ERROR ****")
+        c_print(f"**** {task.host}: TESTING ERROR ****")
         print(output.result)
+
+
+def report_latency(task):
+
+    loss = task.host['output']["packet_loss"]
+    sent = task.host['output']["probes_sent"]
+    rtt_avg = task.host['output']["rtt_avg"]
+
+    loss_pct = loss / sent
+
+    c_print(f"**** {task.host}: RESULTS ****")
+
+    c_print(f"**** {loss_pct}% of {sent} pings failed ****")
+
+    c_print(f"**** Average latency: {rtt_avg} ms ****")
 
     print("~" * 80)
 
@@ -115,7 +124,9 @@ def main():
     # kickoff The Norn
     nr = kickoff()
     # run The Norn
-    nr.run(task=check_latency, num_workers=1)
+    nr.run(task=check_latency)
+    print("~" * 80)
+    nr.run(task=report_latency, num_workers=1)
     c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print("~" * 80)
 

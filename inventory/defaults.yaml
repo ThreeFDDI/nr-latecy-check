@@ -14,3 +14,5 @@ connection_options:
         global_delay_factor: 3
         max_loops: 1000
 port: 22
+data:
+  dest: 2.2.2.2
