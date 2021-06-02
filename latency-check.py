@@ -70,7 +70,14 @@ def kickoff():
         nr.inventory.defaults.password = getpass()
         print()
 
-    c_print(f"Devices: {nr.inventory.hosts.keys()}")
+    devices = ""
+    for dev in nr.inventory.hosts.keys():
+        if devices != "":
+            devices += ", "
+
+        devices += f"{dev}"
+
+    c_print(f"Devices: {devices}")
 
     print("~" * 80)
     return nr
@@ -78,17 +85,15 @@ def kickoff():
 
 def check_latency(task):
 
-    c_print(f"{task.host}")
+    c_print(f"**** {task.host} ****")
 
-    output = task.run(task=napalm_ping, dest="2.2.2.2", size=1500, count=100)
+    output = task.run(task=napalm_ping, dest=task.host['dest'], size=1500, count=100)
 
     if "success" in output.result.keys():
 
         loss = output.result['success']['packet_loss']
         sent = output.result['success']['probes_sent']
         rtt_avg = output.result['success']['rtt_avg']
-        #rtt_max = output.result['success']['rtt_max']
-        #rtt_min = output.result['success']['rtt_min']
 
         loss_pct = loss / sent
 
@@ -97,6 +102,7 @@ def check_latency(task):
         c_print(f"**** Average latency: {rtt_avg} ms ****")
 
     else:
+        c_print("**** ERROR ****")
         print(output.result)
 
     print("~" * 80)
