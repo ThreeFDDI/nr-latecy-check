@@ -96,7 +96,7 @@ def check_latency(task):
     output = task.run(task=napalm_ping, dest=task.host["dest"], size=1500, count=100)
 
     if "success" in output.result.keys():
-        c_print(f"**** {task.host}: TESTING SUCCESS ****")
+        c_print(f"**** {task.host}: TESTING COMPLETE ****")
         task.host['output'] = output.result['success']
     else:
         c_print(f"**** {task.host}: TESTING ERROR ****")
