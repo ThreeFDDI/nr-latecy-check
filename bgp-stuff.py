@@ -1,11 +1,11 @@
 #!/usr/local/bin/python3
 
 """
-This script uses the Nornir framework to 
+This script uses the Nornir framework to
 
-collect discovery information from 
-Cisco network devices and save the output to file. Devices and parameters are 
-provided by the SimpleInventory plugin for Nornir using YAML files. 
+collect discovery information from
+Cisco network devices and save the output to file. Devices and parameters are
+provided by the SimpleInventory plugin for Nornir using YAML files.
 """
 
 import sys
@@ -21,6 +21,9 @@ from pprint import pprint as pp
 
 # print formatting function
 def c_print(printme):
+    """
+    This is a docsting
+    """
     # Print centered text with newline before and after
     print(f"\n" + printme.center(80, " ") + "\n")
 
@@ -31,7 +34,7 @@ def kickoff():
     print()
     print("~" * 80)
 
-    c_print(f"This script will test latency from various Cisco devices")
+    c_print(f"This script will count BGP routes from ASN 12076 on Cisco devices")
 
     time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     c_print(f"Timestamp: {time_stamp}")
