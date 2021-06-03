@@ -93,16 +93,20 @@ def help_todd_count(task):
     """
     c_print(f"**** {task.host}: BEGIN TESTING ****")
 
-    output = task.run(task=netmiko_send_command, command_string="sh ip bgp regex _65513$", use_textfsm=True)
+    output = task.run(
+        task=netmiko_send_command,
+        command_string="sh ip bgp regex _65513$",
+        use_textfsm=True,
+    )
     networks = []
     for network in output.result:
-        networks.append(network['network'])
+        networks.append(network["network"])
     print(networks)
     print(set(networks))
     counter = 0
 
     for i in set(networks):
-        counter +=1
+        counter += 1
 
     c_print(f"*** {task.host}: {counter} networks ***")
 
